@@ -2,3 +2,5 @@ accessWidener v2 named
 
 # This will give us L-shaped piano keys
 extendable method net/minecraft/client/gui/widget/ClickableWidget render (Lnet/minecraft/client/gui/DrawContext;IIF)V
+
+accessible method net/minecraft/block/NoteBlock onSyncedBlockEvent (Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;II)Z
