@@ -17,41 +17,43 @@
 
 package cool.xwj.blocktuner.mixin;
 
-import cool.xwj.blocktuner.BlockTunerClient;
 import cool.xwj.blocktuner.TuningScreen;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.NoteBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.BlockStateComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(NoteBlock.class)
 public class NoteBlockMixinClient extends Block {
+
     public NoteBlockMixinClient(Settings settings) {
         super(settings);
     }
 
     @Override
     public ItemStack getPickStack(WorldView world, BlockPos pos, BlockState state) {
-        ItemStack stack = new ItemStack((NoteBlock) (Object) this);
-
+        ItemStack stack = super.getPickStack(world, pos, state);
         if (Screen.hasControlDown()) {
-            int note = state.get(NoteBlock.NOTE);
-            NbtCompound tag = new NbtCompound();
-
-            tag.putInt("note", note);
-            stack.setSubNbt(BlockTunerClient.BLOCK_STATE_KEY, tag);
+            copyBlockState(state, stack);
         }
         return stack;
+    }
+
+    @Unique
+    private static void copyBlockState(BlockState state, ItemStack stack) {
+        stack.set(DataComponentTypes.BLOCK_STATE, BlockStateComponent.DEFAULT.with(NoteBlock.NOTE, state));
     }
 
     @Override

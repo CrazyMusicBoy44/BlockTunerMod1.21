@@ -32,13 +32,11 @@ import net.minecraft.util.ActionResult;
 
 @Environment(EnvType.CLIENT)
 public class BlockTunerClient implements ClientModInitializer {
-    public static final String BLOCK_STATE_KEY = "BlockStateTag";
 
     @Override
     public void onInitializeClient() {
         BlockTunerConfig.load();
         MidiManager.getMidiManager().refreshMidiDevice();
-
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             if (BlockTunerConfig.onBlockTunerServer
                     && Screen.hasControlDown()
@@ -54,12 +52,7 @@ public class BlockTunerClient implements ClientModInitializer {
         });
 
         // knowing a BlockTuner server
-        ClientPlayNetworking.registerGlobalReceiver(BlockTuner.CLIENT_CHECK, (client, handler, buf, responseSender) -> {
-            int serverProtocol = buf.readInt();
-            if (BlockTuner.TUNING_PROTOCOL == serverProtocol) {
-                MinecraftClient.getInstance().execute(() -> BlockTunerConfig.onBlockTunerServer = true);
-            }
-        });
+        ClientPlayNetworking.registerGlobalReceiver(ProtocolCheckS2CPacket.ID, ProtocolCheckS2CPacket::receive);
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> BlockTunerConfig.onBlockTunerServer = false);
     }
 }

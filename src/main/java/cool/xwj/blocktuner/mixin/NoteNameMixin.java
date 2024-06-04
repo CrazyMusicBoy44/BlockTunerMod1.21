@@ -17,14 +17,15 @@
 
 package cool.xwj.blocktuner.mixin;
 
-import cool.xwj.blocktuner.BlockTunerClient;
 import cool.xwj.blocktuner.NoteNames;
+import net.minecraft.block.NoteBlock;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -32,23 +33,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ItemStack.class)
 public class NoteNameMixin {
 
-
-    private static final String NOTE_KEY = "note";
+    @Unique
     private static final Style NOTE_STYLE = Style.EMPTY.withColor(Formatting.AQUA);
 
-    @Inject(method = "getName", at = @At("TAIL"), cancellable = true)
+    @Inject(method = "getName", at = @At("HEAD"), cancellable = true)
     private void getNoteName(CallbackInfoReturnable<Text> cir){
-        if (((ItemStack)(Object)this).getItem() == Items.NOTE_BLOCK) {
-
-            NbtCompound nbtCompound = ((ItemStack)(Object)this).getSubNbt(BlockTunerClient.BLOCK_STATE_KEY);
-            int note = 0;
-
-            if (nbtCompound != null && nbtCompound.contains(NOTE_KEY, 3)) {
-                note = nbtCompound.getInt(NOTE_KEY);
-                if (note > 24 || note < 0) {
-                    note = 0;
-                }
-            }
+        ItemStack itemStack = (ItemStack)(Object)this;
+        if (itemStack.getItem() == Items.NOTE_BLOCK && itemStack.get(DataComponentTypes.BLOCK_STATE) != null) {
+            int note = itemStack.get(DataComponentTypes.BLOCK_STATE).getValue(NoteBlock.NOTE);
             cir.setReturnValue(MutableText.of(new TranslatableTextContent(((ItemStack)(Object)this).getTranslationKey(), null, null))
                     .append(MutableText.of(new PlainTextContent.Literal(" (" + NoteNames.get(note) + ", "+ note + ")")).setStyle(NOTE_STYLE)));
         }
